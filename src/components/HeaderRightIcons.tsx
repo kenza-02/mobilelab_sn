@@ -14,9 +14,9 @@ export const HeaderRightIcons = () => {
         // @ts-ignore
         router.push("/");
         break;
-      case "menu":
+      case "admin":
         // @ts-ignore
-        router.push("/parametres");
+        router.push("/admin");
         break;
       default:
         Alert.alert("Action", `Icône ${target} cliquée.`);
@@ -36,6 +36,12 @@ export const HeaderRightIcons = () => {
       >
         <Ionicons name="menu" size={24} color={ICON_COLOR} />
       </TouchableOpacity> */}
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => handlePress("admin")}
+        style={styles.iconButton}
+      >
+        <Ionicons name="log-in-outline" size={24} color={ICON_COLOR} />
       </TouchableOpacity>
       <View style={styles.iconButton}>
         <ThemeToggle />
