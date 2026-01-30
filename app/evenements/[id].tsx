@@ -1,9 +1,13 @@
+import { BASE_URL } from "@/config/api";
 import { useTheme } from "@/hooks/useTheme";
+import { getEvenementById } from "@/services/evenementService";
 import { BaseStyles } from "@/styles/BaseStyles";
+import { Evenement } from "@/types/evenement";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   Linking,
@@ -17,47 +21,115 @@ import {
 
 const { width } = Dimensions.get("window");
 
-const eventData = {
-  id: "101",
-  title: "Sommet de la Démocratie Participative",
-  type: "PHYSIQUE", // ou "LIGNE"
-  date: "Samedi 24 Jan. 2026",
-  time: "09:00 - 17:00",
-  locationName: "Place de l'Indépendance, Dakar",
-  coordinates: {
-    latitude: 14.6677,
-    longitude: -17.4391,
-  },
-  speakers: [
-    {
-      name: "Dr. Amy Sall",
-      role: "Urbaniste",
-      photo: "https://i.pravatar.cc/150?u=1",
-    },
-    {
-      name: "M. Bassirou Diop",
-      role: "Médiateur",
-      photo: "https://i.pravatar.cc/150?u=2",
-    },
-  ],
-  description:
-    "Rejoignez-nous pour une journée d'ateliers collaboratifs afin de dessiner le futur de notre ville. Au programme : design thinking, présentations de projets citoyens et networking.",
-  imageUri:
-    "https://img.freepik.com/free-photo/group-diverse-people-having-business-meeting_53876-25060.jpg",
-};
-
 const EventDetailScreen = () => {
   const { colors } = useTheme();
+  const { id } = useLocalSearchParams();
+  const [evenement, setEvenement] = useState<Evenement | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadEvenement = async () => {
+      try {
+        setLoading(true);
+        if (id) {
+          const data = await getEvenementById(Number(id));
+          setEvenement(data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement de l'événement:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvenement();
+  }, [id]);
+
+  // Formater la date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    };
+    return date.toLocaleDateString("fr-FR", options);
+  };
 
   const openInGoogleMaps = () => {
-    const { latitude, longitude } = eventData.coordinates;
+    if (!evenement || !evenement.lieu) return;
     const url = Platform.select({
-      ios: `maps:0,0?q=${eventData.locationName}@${latitude},${longitude}`,
-      android: `geo:0,0?q=${latitude},${longitude}(${eventData.locationName})`,
+      ios: `maps:0,0?q=${evenement.lieu}`,
+      android: `geo:0,0?q=${evenement.lieu}`,
     });
     if (url) Linking.openURL(url);
   };
 
+  const openLink = () => {
+    if (evenement?.lien) {
+      Linking.openURL(evenement.lien);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View
+        style={[
+          BaseStyles.mainContainer,
+          {
+            backgroundColor: colors.background,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.tint1} />
+        <Text style={[styles.loadingText, { color: colors.text }]}>
+          Chargement de l'événement...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!evenement) {
+    return (
+      <View
+        style={[
+          BaseStyles.mainContainer,
+          {
+            backgroundColor: colors.background,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <Ionicons
+          name="alert-circle-outline"
+          size={60}
+          color={colors.text}
+          style={{ opacity: 0.3 }}
+        />
+        <Text style={[styles.errorText, { color: colors.text }]}>
+          Événement introuvable
+        </Text>
+        <TouchableOpacity
+          style={[styles.backButton, { backgroundColor: colors.tint1 }]}
+          onPress={() => router.push("/evenements" as any)}
+        >
+          <Text style={[styles.backButtonText, { color: colors.tint2 }]}>
+            Retour aux événements
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const defaultImage =
+    "https://img.freepik.com/free-photo/group-diverse-people-having-business-meeting_53876-25060.jpg";
+  const imageUri = evenement.image
+    ? `${BASE_URL}/storage/${evenement.image}`
+    : defaultImage;
   return (
     <View
       style={[BaseStyles.mainContainer, { backgroundColor: colors.background }]}
@@ -65,17 +137,14 @@ const EventDetailScreen = () => {
       <View style={BaseStyles.headerFloating}>
         <TouchableOpacity
           style={[BaseStyles.backCircle, { backgroundColor: colors.card }]}
-          onPress={() => router.push(`/evenements` as any)}
+          onPress={() => router.push("/evenements" as any)}
         >
           <Ionicons name="arrow-back" size={24} color={colors.tint1} />
         </TouchableOpacity>
       </View>
 
       <ScrollView>
-        <Image
-          source={{ uri: eventData.imageUri }}
-          style={BaseStyles.heroImage}
-        />
+        <Image source={{ uri: imageUri }} style={BaseStyles.heroImage} />
 
         <View
           style={[
@@ -85,61 +154,105 @@ const EventDetailScreen = () => {
         >
           <View style={[styles.typeBadge, { backgroundColor: colors.tint1 }]}>
             <Text style={[styles.typeText, { color: colors.tint2 }]}>
-              {eventData.type}
+              {evenement.type?.toUpperCase() || "ÉVÉNEMENT"}
             </Text>
           </View>
 
           <Text style={[BaseStyles.title, { color: colors.text }]}>
-            {eventData.title}
+            {evenement.libelle}
           </Text>
           <View style={styles.infoRow}>
             <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
               <Ionicons name="calendar" size={20} color={colors.tint1} />
               <Text style={[styles.infoText, { color: colors.text }]}>
-                {eventData.date}
+                {formatDate(evenement.date_debut)}
               </Text>
               <Text style={[styles.infoSubText, { color: colors.text }]}>
-                {eventData.time}
+                {evenement.heure_debut} - {evenement.heure_fin}
               </Text>
             </View>
             <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
-              <Ionicons name="location" size={20} color={colors.tint1} />
+              <Ionicons
+                name={evenement.lieu ? "location" : "link"}
+                size={20}
+                color={colors.tint1}
+              />
               <Text
                 style={[styles.infoText, { color: colors.text }]}
                 numberOfLines={1}
               >
-                Dakar
+                {evenement.lieu ? "Présentiel" : "En ligne"}
               </Text>
-              <Text style={[styles.infoSubText, { color: colors.text }]}>
-                Sénégal
-              </Text>
+              {evenement.lieu ? (
+                <TouchableOpacity onPress={openInGoogleMaps}>
+                  <Text style={[styles.infoSubText, { color: colors.tint1 }]}>
+                    {evenement.lieu}
+                  </Text>
+                </TouchableOpacity>
+              ) : evenement.lien ? (
+                <TouchableOpacity onPress={openLink}>
+                  <Text
+                    style={[
+                      styles.infoSubText,
+                      { color: colors.tint1, textDecorationLine: "underline" },
+                    ]}
+                  >
+                    Rejoindre
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           </View>
-          <Text style={[BaseStyles.sectionTitle, { color: colors.text }]}>
-            Intervenants
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.speakersScroll}
-          >
-            {eventData.speakers.map((s, index) => (
-              <View
-                key={index}
-                style={[styles.speakerItem, { backgroundColor: colors.card }]}
+
+          {evenement.intervenants && evenement.intervenants.length > 0 && (
+            <>
+              <Text style={[BaseStyles.sectionTitle, { color: colors.text }]}>
+                Intervenants
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.speakersScroll}
               >
-                <Image source={{ uri: s.photo }} style={styles.speakerPhoto} />
-                <View>
-                  <Text style={[styles.speakerName, { color: colors.text }]}>
-                    {s.name}
-                  </Text>
-                  <Text style={[styles.speakerRole, { color: colors.text }]}>
-                    {s.role}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+                {evenement.intervenants.map((intervenant, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.speakerItem,
+                      { backgroundColor: colors.card },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.avatarPlaceholder,
+                        { backgroundColor: colors.tint1 },
+                      ]}
+                    >
+                      <Text
+                        style={[styles.avatarText, { color: colors.tint2 }]}
+                      >
+                        {intervenant.prenom?.charAt(0)}
+                        {intervenant.nom?.charAt(0)}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text
+                        style={[styles.speakerName, { color: colors.text }]}
+                      >
+                        {intervenant.prenom} {intervenant.nom}
+                      </Text>
+                      <Text
+                        style={[styles.speakerRole, { color: colors.text }]}
+                      >
+                        {intervenant.sexe}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            </>
+          )}
+
           <Text
             style={[
               BaseStyles.sectionTitle,
@@ -149,7 +262,7 @@ const EventDetailScreen = () => {
             Détails
           </Text>
           <Text style={[BaseStyles.description, { color: colors.text }]}>
-            {eventData.description}
+            {evenement.description || "Aucune description disponible."}
           </Text>
           <View style={{ height: 120 }} />
         </View>
@@ -182,8 +295,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
   },
-  infoText: { fontSize: 13, fontWeight: "bold", marginTop: 8 },
-  infoSubText: { fontSize: 11, opacity: 0.6 },
+  infoText: {
+    fontSize: 13,
+    fontWeight: "bold",
+    marginTop: 8,
+    textAlign: "center",
+  },
+  infoSubText: {
+    fontSize: 11,
+    opacity: 0.6,
+    marginTop: 4,
+    textAlign: "center",
+  },
   speakersScroll: { marginBottom: 10, padding: 5 },
   speakerItem: {
     flexDirection: "row",
@@ -196,8 +319,41 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   speakerPhoto: { width: 45, height: 45, borderRadius: 22, marginRight: 12 },
+  avatarPlaceholder: {
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    marginRight: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   speakerName: { fontSize: 14, fontWeight: "bold" },
   speakerRole: { fontSize: 12, opacity: 0.6 },
+  loadingText: {
+    marginTop: 15,
+    fontSize: 16,
+    opacity: 0.7,
+  },
+  errorText: {
+    marginTop: 15,
+    fontSize: 16,
+    opacity: 0.7,
+    textAlign: "center",
+  },
+  backButton: {
+    marginTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
 
 export default EventDetailScreen;

@@ -12,4 +12,3 @@ export interface QuickAccessButton {
   iconName?: string;
 }
 export const PUBLIC_WORDPRESS_API_URL = "https://citizenlab.africtivistes.org/senegal/graphql";
-export const API_URL = "http:localhost:8000/api";
