@@ -1,7 +1,9 @@
+import { PUBLIC_WORDPRESS_API_URL } from "@/types/navigation";
+
 export async function navQuery() {
   try {
     const apiUrl =
-      import.meta.env.PUBLIC_WORDPRESS_API_URL ||
+      PUBLIC_WORDPRESS_API_URL ||
       "https://citizenlab.africtivistes.org/senegal/graphql";
     console.log("Fetching menu from:", apiUrl);
 
@@ -87,7 +89,7 @@ function getDefaultMenu() {
 export async function getNodeByURI(uri) {
   try {
     const apiUrl =
-      import.meta.env.PUBLIC_WORDPRESS_API_URL ||
+      PUBLIC_WORDPRESS_API_URL ||
       "https://citizenlab.africtivistes.org/senegal/graphql";
 
     // Créer un AbortController pour gérer le timeout
@@ -210,7 +212,7 @@ export async function getNodeByURI(uri) {
 export async function getAllUris() {
   try {
     const apiUrl =
-      import.meta.env.PUBLIC_WORDPRESS_API_URL ||
+      PUBLIC_WORDPRESS_API_URL ||
       "https://citizenlab.africtivistes.org/senegal/graphql";
 
     let allUris = [];
@@ -310,7 +312,7 @@ export async function getAllUris() {
 
 export async function findLatestPostsAPI() {
   const apiUrl =
-    import.meta.env.PUBLIC_WORDPRESS_API_URL ||
+    PUBLIC_WORDPRESS_API_URL ||
     "https://citizenlab.africtivistes.org/senegal/graphql";
 
   try {
@@ -406,7 +408,7 @@ export async function findLatestPostsAPI() {
 }
 export async function newsPagePostsQuery() {
   const apiUrl =
-    import.meta.env.PUBLIC_WORDPRESS_API_URL ||
+    PUBLIC_WORDPRESS_API_URL ||
     "https://citizenlab.africtivistes.org/senegal/graphql";
 
   try {
@@ -510,7 +512,7 @@ export async function newsPagePostsQuery() {
 
 export async function getAllMembers() {
   const apiUrl =
-    import.meta.env.PUBLIC_WORDPRESS_API_URL2 ||
+    PUBLIC_WORDPRESS_API_URL ||
     "https://citizenlab.africtivistes.org/senegal/graphql";
 
   if (!apiUrl) {
@@ -600,7 +602,7 @@ export async function getActualitesPosts() {
     }
   `;
 
-  const res = await fetch(import.meta.env.PUBLIC_WP_GRAPHQL_URL, {
+  const res = await fetch(PUBLIC_WORDPRESS_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -613,7 +615,7 @@ export async function getActualitesPosts() {
 }
 
 export async function getPodcastPosts() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
 
   if (!apiUrl) {
     console.warn("PUBLIC_WORDPRESS_API_URL is not defined");
@@ -662,7 +664,7 @@ export async function getPodcastPosts() {
 }
 
 export async function getLatestActualites(limit = 3) {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
 
   if (!apiUrl) return [];
 
@@ -726,7 +728,7 @@ export function extractAudioUrl(postContent) {
 }
 
 export async function getAllActualites() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL2;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
   const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -767,7 +769,7 @@ export async function getAllActualites() {
 }
 
 export async function getAllFormations() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
 
   const response = await fetch(apiUrl, {
     method: "POST",
@@ -818,7 +820,7 @@ export async function getAllFormations() {
 }
 
 export async function getNextFormation() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
 
   const response = await fetch(apiUrl, {
     method: "POST",
@@ -895,7 +897,7 @@ export async function getNextFormation() {
 }
 
 export async function getAllMagazines() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
 
   const response = await fetch(apiUrl, {
     method: "POST",
@@ -940,7 +942,7 @@ export async function getAllMagazines() {
 }
 
 export async function getAllPodcast() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
   if (!apiUrl) return [];
 
   const response = await fetch(apiUrl, {
@@ -1003,7 +1005,7 @@ export function extractVideoUrl(postContent) {
 }
 
 export async function getAllVideos() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
   const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1037,7 +1039,7 @@ export async function getAllVideos() {
   return data?.posts?.nodes ?? [];
 }
 export async function getAllRealisations() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
 
   if (!apiUrl) {
     console.warn("PUBLIC_WORDPRESS_API_URL is not defined");
@@ -1093,7 +1095,7 @@ export async function getAllRealisations() {
   }
 }
 export async function getRealisationBySlug(slug) {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
 
   if (!apiUrl) {
     console.warn("PUBLIC_WORDPRESS_API_URL is not defined");
@@ -1159,7 +1161,7 @@ export async function getRealisationBySlug(slug) {
 }
 // Fonction pour récupérer tous les projets
 export async function getAllProjets() {
-  const apiUrl = import.meta.env.PUBLIC_WORDPRESS_API_URL;
+  const apiUrl = PUBLIC_WORDPRESS_API_URL;
   const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
